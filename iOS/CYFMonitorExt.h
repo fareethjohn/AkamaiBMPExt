@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void)getSensorDataIn:(void (^)(NSString *param))handler;
 + (CYFMonitorExt *)sharedInstance;
+-(NSString *)getSensorData;
 @end
 
 NS_ASSUME_NONNULL_END

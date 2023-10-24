@@ -17,7 +17,7 @@
 @implementation CYFMonitorExt
 NSString *const kSD_default_mobile = @"default-mobile";
 int const kSD_Sampling_Time = 1.0;
-int const kSD_TimeOut = 5;
+int const kSD_TimeOut = 30;
 
 +(CYFMonitorExt *)sharedInstance {
     static dispatch_once_t pred = 0;
@@ -28,6 +28,12 @@ int const kSD_TimeOut = 5;
     return _sharedObject;
 }
 
+/**
+ * Returns the sensor data in the block callback once the SDK ready to provide right sensor data
+ * @author Fareeth John
+ *
+ * @param handler - returns newly created sensor data in the block callback
+ */
 -(void)getSensorDataIn:(void (^)(NSString *sd))handler{
     @synchronized (self) {
         _mSD= CYFMonitor.getSensorData;
@@ -52,5 +58,34 @@ int const kSD_TimeOut = 5;
         }
     }
 }
+
+/**
+ * Returns the sensor data in synchronous way once the SDK ready to provide right sensor data
+ * @author Fareeth John
+ *
+ * @return A newly created sensor data
+ */
+-(NSString *)getSensorData{
+    @synchronized (self) {
+        _mSD= CYFMonitor.getSensorData;
+        if (_mSD == kSD_default_mobile) {
+            for(int i =0; i <= kSD_TimeOut; i ++){
+                [NSThread sleepForTimeInterval:kSD_Sampling_Time];
+                self.mSD= CYFMonitor.getSensorData;
+                if (self.mSD != kSD_default_mobile){
+                    return self.mSD;
+                }
+                else if(i == kSD_TimeOut){
+                    return self.mSD;
+                }
+            }
+        }
+        else{
+            return _mSD;
+        }
+    }
+    return _mSD;
+}
+
 
 @end
